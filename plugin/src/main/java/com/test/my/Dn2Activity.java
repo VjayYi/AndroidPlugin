@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -17,6 +18,8 @@ public class Dn2Activity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plugin);
+        TextView tv=findViewById(R.id.tv);
+        tv.setText("Dn2Activity");
     }
 
     public void whoToast(View view) {

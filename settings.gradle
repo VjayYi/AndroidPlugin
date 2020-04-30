@@ -1,3 +1,4 @@
 rootProject.name='AndroidPlugin'
 include ':app', ':dnplugin'
 project(':dnplugin').projectDir = new File('plugin')
+include ':lib'

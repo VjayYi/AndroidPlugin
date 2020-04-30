@@ -6,22 +6,18 @@ import android.content.res.Resources;
 
 /**
  * Created by YiVjay
- * on 2020/4/17
+ * on 2020/4/29
  */
 public class App extends Application {
+
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        try {
-            HookHelper.initHook(base);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        HookHelper.init(base);
     }
-
 
     @Override
     public Resources getResources() {
-        return LoadedResource.getResources()==null?super.getResources():LoadedResource.getResources();
+        return ResUtil.getResources()==null?super.getResources():ResUtil.getResources();
     }
 }

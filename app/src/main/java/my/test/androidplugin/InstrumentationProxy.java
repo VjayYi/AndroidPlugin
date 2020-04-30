@@ -15,45 +15,67 @@ import java.util.List;
 
 /**
  * Created by YiVjay
- * on 2020/4/17
+ * on 2020/4/29
  */
 public class InstrumentationProxy extends Instrumentation {
 
-    private static final String SET_INTENT = "set_intent";
+    private static String TARTET="target";
     private Instrumentation instrumentation;
     private PackageManager packageManager;
 
-    public InstrumentationProxy(Instrumentation instrumentation, PackageManager packageManager) {
-        this.packageManager = packageManager;
-        this.instrumentation = instrumentation;
+    public InstrumentationProxy(Instrumentation instrumentation,PackageManager packageManager){
+        this.instrumentation=instrumentation;
+        this.packageManager=packageManager;
     }
 
+    /**
+     * 欺骗AMS
+     * @param who
+     * @param contextThread
+     * @param token
+     * @param target
+     * @param intent
+     * @param requestCode
+     * @param options
+     * @return
+     */
     public ActivityResult execStartActivity(
             Context who, IBinder contextThread, IBinder token, Activity target,
             Intent intent, int requestCode, Bundle options) {
-
-        List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL);
-        if (resolveInfos == null || resolveInfos.size() == 0) {
-            intent.putExtra(SET_INTENT, intent.getComponent().getClassName());
-            intent.setClassName(who, "my.test.androidplugin.PlayActivity");
+        List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(intent,PackageManager.MATCH_ALL);
+        //判断加载的是否是外部插件
+        if(resolveInfos==null||resolveInfos.size()<=0){
+            intent.putExtra(TARTET,intent.getComponent().getClassName());
+            intent.setClassName(who,"my.test.androidplugin.PluginActivity");
         }
-
         try {
-            Method execStartActivity = ApkUtil.getMethod(instrumentation, "execStartActivity", Context.class,
-                    IBinder.class, IBinder.class, Activity.class, Intent.class,
-                    int.class, Bundle.class);
-            return (ActivityResult) execStartActivity.invoke(instrumentation, who, contextThread,
-                    token, target, intent, requestCode, options);
-        } catch (Exception e) {
+            Method execStartActivity = ApkUtil.getMethod(instrumentation, "execStartActivity",
+                    Context.class, IBinder.class, IBinder.class, Activity.class
+                    , Intent.class, int.class, Bundle.class);
+            return (ActivityResult) execStartActivity.invoke(instrumentation,who,contextThread,token,target,
+                    intent,requestCode,options);
+        } catch ( Exception e) {
             e.printStackTrace();
         }
+
+
         return null;
     }
 
+    /**
+     * 加载插件的activity
+     * @param cl
+     * @param className
+     * @param intent
+     * @return
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
     @Override
     public Activity newActivity(ClassLoader cl, String className, Intent intent) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        String stringExtra = intent.getStringExtra(SET_INTENT);
-        if (!TextUtils.isEmpty(stringExtra)) {
+        String stringExtra = intent.getStringExtra(TARTET);
+        if(!TextUtils.isEmpty(stringExtra)){
             return super.newActivity(cl, stringExtra, intent);
         }
         return super.newActivity(cl, className, intent);
